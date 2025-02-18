@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>睡眠年齡測驗</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .question-card {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+        button.selected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .result-card {
+            padding: 20px;
+            background-color: #f0f8e1;
+            text-align: center;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🛏️ 睡眠年齡測驗</h1>
+
+    <div id="quiz-container"></div>
+
+    <button id="submit-btn" onclick="calculateResult()" disabled>查看結果</button>
+
+    <div id="result-container" class="result-card" style="display: none;">
+        <h2 id="result-text"></h2>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "你的平均入睡時間是？",
+                options: [
+                    { text: "10分鐘內", score: 5 },
+                    { text: "10-20分鐘", score: 4 },
+                    { text: "20-30分鐘", score: 3 },
+                    { text: "30-45分鐘", score: 2 },
+                    { text: "超過45分鐘", score: 1 },
+                ],
+            },
+            {
+                question: "你每天平均睡幾小時？",
+                options: [
+                    { text: "7-9小時", score: 5 },
+                    { text: "6-7小時", score: 4 },
+                    { text: "5-6小時", score: 3 },
+                    { text: "4-5小時", score: 2 },
+                    { text: "少於4小時", score: 1 },
+                ],
+            },
+            {
+                question: "你一夜之間會醒來幾次？",
+                options: [
+                    { text: "0次", score: 5 },
+                    { text: "1次", score: 4 },
+                    { text: "2次", score: 3 },
+                    { text: "3次", score: 2 },
+                    { text: "4次以上", score: 1 },
+                ],
+            },
+            {
+                question: "你醒來時通常感覺如何？",
+                options: [
+                    { text: "神清氣爽，精力充沛", score: 5 },
+                    { text: "還算不錯，能量足夠", score: 4 },
+                    { text: "普普通通，有點累", score: 3 },
+                    { text: "疲憊無力，想再睡", score: 2 },
+                    { text: "超級累，像是沒睡過", score: 1 },
+                ],
+            },
+            {
+                question: "你白天會打瞌睡嗎？",
+                options: [
+                    { text: "完全不會", score: 5 },
+                    { text: "偶爾一次", score: 4 },
+                    { text: "每天至少1次", score: 3 },
+                    { text: "多次打瞌睡", score: 2 },
+                    { text: "無法控制地入睡", score: 1 },
+                ],
+            },
+            {
+                question: "你有沒有睡眠習慣問題（如打鼾、夢遊、夜驚等）？",
+                options: [
+                    { text: "完全沒有", score: 5 },
+                    { text: "很少發生", score: 4 },
+                    { text: "偶爾有", score: 3 },
+                    { text: "經常發生", score: 2 },
+                    { text: "每天都有困擾", score: 1 },
+                ],
+            },
+            {
+                question: "你的床墊/枕頭適合你嗎？",
+                options: [
+                    { text: "超舒服，完全適合我", score: 5 },
+                    { text: "90%滿意", score: 4 },
+                    { text: "普普通通", score: 3 },
+                    { text: "有點不舒服", score: 2 },
+                    { text: "完全不適合，想換新", score: 1 },
+                ],
+            },
+            {
+                question: "你睡覺的環境（光線、噪音、溫度）如何？",
+                options: [
+                    { text: "非常舒適，沒有干擾", score: 5 },
+                    { text: "大部分時間舒適", score: 4 },
+                    { text: "有時候會受到影響", score: 3 },
+                    { text: "經常不舒服", score: 2 },
+                    { text: "環境超級差，影響睡眠", score: 1 },
+                ],
+            },
+            {
+                question: "你是否有睡前使用手機/電視的習慣？",
+                options: [
+                    { text: "幾乎不會", score: 5 },
+                    { text: "睡前30分鐘內會停止使用", score: 4 },
+                    { text: "睡前15分鐘還在看", score: 3 },
+                    { text: "一直滑手機到快睡著", score: 2 },
+                    { text: "看影片/玩手機到睡著", score: 1 },
+                ],
+            },
+            {
+                question: "你會因為壓力或焦慮導致睡不著嗎？",
+                options: [
+                    { text: "幾乎不會影響", score: 5 },
+                    { text: "有時候會影響", score: 4 },
+                    { text: "偶爾失眠", score: 3 },
+                    { text: "經常睡不著", score: 2 },
+                    { text: "失眠嚴重，需要幫助", score: 1 },
+                ],
+            }
+        ];
+
+        let answers = Array(questions.length).fill(null);
+
+        function renderQuiz() {
+            const quizContainer = document.getElementById('quiz-container');
+            quizContainer.innerHTML = '';
+
+            questions.forEach((q, i) => {
+                const questionCard = document.createElement('div');
+                questionCard.classList.add('question-card');
+
+                const questionTitle = document.createElement('h2');
+                questionTitle.textContent = `${i + 1}. ${q.question}`;
+
+                const optionsContainer = document.createElement('div');
+                q.options.forEach((opt, j) => {
+                    const button = document.createElement('button');
+                    button.textContent = opt.text;
+                    button.onclick = () => selectAnswer(i, opt.score, button);
+                    optionsContainer.appendChild(button);
+                });
+
+                questionCard.appendChild(questionTitle);
+                questionCard.appendChild(optionsContainer);
+                quizContainer.appendChild(questionCard);
+            });
+        }
+
+        function selectAnswer(questionIndex, score, buttonElement) {
+            const buttons = buttonElement.parentElement.getElementsByTagName('button');
+            for (let btn of buttons) {
+                btn.classList.remove('selected');
+            }
+            buttonElement.classList.add('selected');
+            answers[questionIndex] = score;
+
+            document.getElementById('submit-btn').disabled = answers.includes(null);
+        }
+
+        function calculateResult() {
+            const totalScore = answers.reduce((sum, val) => sum + (val || 0), 0);
+            let resultText = '';
+
+            if (totalScore >= 45) {
+                resultText = '18-25歲 (睡眠品質佳)';
+            } else if (totalScore >= 38) {
+                resultText = '26-35歲 (睡眠狀況良好，但可以優化)';
+            } else if (totalScore >= 30) {
+                resultText = '36-45歲 (可能有些睡眠問題，需改善)';
+            } else if (totalScore >= 20) {
+                resultText = '46-60歲 (睡眠狀況不佳，影響健康)';
+            } else {
+                resultText = '60歲以上 (嚴重影響身體機能，需改善習慣或尋求專業建議)';
+            }
+
+            document.getElementById('result-text').textContent = '你的睡眠年齡：' + resultText;
+            document.getElementById('result-container').style.display = 'block';
+        }
+
+        renderQuiz();
+    </script>
+
+</body>
+</html>
