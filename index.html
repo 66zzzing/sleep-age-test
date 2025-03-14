@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>睡眠年齡測驗</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            background: url('https://i.imgur.com/SShCxPM.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .logo {
+            display: block;
+            margin: 0 auto;
+            width: 150px; /* 設定logo寬度 */
+            margin-bottom: -20px;
+        }
+        .question-card {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f1f1f1;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button.selected {
+            background-color: #73b4e6;
+            color: white;
+        }
+        .result-card {
+            padding: 20px;
+            background-color: #f0f8e1;
+            text-align: center;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <img src="https://i.imgur.com/u6CxZ7b.png" alt="Logo" class="logo">
+    <h1>🛏️ 睡 眠 年 齡 測 驗 🛏️</h1>
+    <div id="quiz-container"></div>
+    <button id="submit-btn" onclick="calculateResult()" disabled>查看結果</button>
+    <div id="result-container" class="result-card" style="display: none;">
+        <h2 id="result-text"></h2>
+        <button onclick="restartQuiz()">再測一次</button>
+    </div>
+    <script>
+        const questions = [
+            { question: "你的平均入睡時間是？", options: ["10分鐘內", "10-20分鐘", "20-30分鐘", "30-45分鐘", "超過45分鐘"], scores: [5, 4, 3, 2, 1] },
+            { question: "你每天平均睡幾小時？", options: ["7-9小時", "6-7小時", "5-6小時", "4-5小時", "少於4小時"], scores: [5, 4, 3, 2, 1] },
+            { question: "你一夜之間會醒來幾次？", options: ["0次", "1次", "2次", "3次", "4次以上"], scores: [5, 4, 3, 2, 1] },
+            { question: "你醒來時通常感覺如何？", options: ["神清氣爽", "還算不錯", "普通", "疲憊", "超級累"], scores: [5, 4, 3, 2, 1] },
+            { question: "你白天會打瞌睡嗎？", options: ["完全不會", "偶爾一次", "每天至少1次", "多次打瞌睡", "無法控制"], scores: [5, 4, 3, 2, 1] },
+            { question: "你有沒有睡眠習慣問題？", options: ["完全沒有", "很少發生", "偶爾有", "經常發生", "每天都有困擾"], scores: [5, 4, 3, 2, 1] },
+            { question: "你的床墊/枕頭適合你嗎？", options: ["超舒服", "90%滿意", "普通", "有點不舒服", "完全不適合"], scores: [5, 4, 3, 2, 1] },
+            { question: "你的睡眠環境如何？", options: ["非常舒適", "大部分時間舒適", "有時影響", "經常不舒服", "環境差影響睡眠"], scores: [5, 4, 3, 2, 1] },
+            { question: "睡前使用手機/電視嗎？", options: ["幾乎不會", "30分鐘內停止", "15分鐘內使用", "一直滑手機", "睡著前還在看"], scores: [5, 4, 3, 2, 1] },
+            { question: "壓力或焦慮影響睡眠嗎？", options: ["幾乎不影響", "有時影響", "偶爾失眠", "經常睡不著", "嚴重失眠"], scores: [5, 4, 3, 2, 1] }
+        ];
+        let answers = Array(questions.length).fill(null);
+        function renderQuiz() {
+            const quizContainer = document.getElementById('quiz-container');
+            quizContainer.innerHTML = '';
+            questions.forEach((q, i) => {
+                const card = document.createElement('div');
+                card.classList.add('question-card');
+                card.innerHTML = `<h2>${i + 1}. ${q.question}</h2>`;
+                q.options.forEach((opt, j) => {
+                    const button = document.createElement('button');
+                    button.textContent = opt;
+                    button.onclick = () => selectAnswer(i, q.scores[j], button);
+                    card.appendChild(button);
+                });
+                quizContainer.appendChild(card);
+            });
+        }
+        function selectAnswer(index, score, button) {
+            const buttons = button.parentElement.getElementsByTagName('button');
+            for (let btn of buttons) { btn.classList.remove('selected'); }
+            button.classList.add('selected');
+            answers[index] = score;
+            document.getElementById('submit-btn').disabled = answers.includes(null);
+        }
+        function calculateResult() {
+            const totalScore = answers.reduce((sum, val) => sum + (val || 0), 0);
+            let url = "";
+            if (totalScore >= 45) url = "https://www.jalthome.com/content-122.html";
+            else if (totalScore >= 38) url = "https://www.jalthome.com/content-123.html";
+            else if (totalScore >= 30) url = "https://www.jalthome.com/content-124.html";
+            else if (totalScore >= 20) url = "https://www.jalthome.com/content-125.html";
+            else url = "https://www.jalthome.com/content-126.html";
+            window.location.href = url;
+        }
+        function restartQuiz() {
+            answers.fill(null);
+            renderQuiz();
+        }
+        renderQuiz();
+    </script>
+</body>
+</html>
